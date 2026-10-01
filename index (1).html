@@ -1,0 +1,168 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#6f4e37"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Coffee Recipe"><title>Coffee Recipe</title><style>
+*{box-sizing:border-box}body{margin:0;background:#faf8f4;color:#292622;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif}main{max-width:620px;margin:auto;padding:24px 16px 40px}.muted,.note{color:#756f68;font-size:13px;line-height:1.7}.card{background:#fff;border:1px solid #e6e0d8;border-radius:18px;padding:16px;margin:12px 0}h1{font-size:28px;margin:4px 0}.grid,.results{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin:12px 0}label{display:block;font-size:13px;color:#756f68;margin-bottom:7px}select,input{width:100%;height:48px;border:1px solid #d8d0c7;border-radius:12px;background:#fff;padding:0 12px;font-size:16px;color:#292622}.metric{background:#faf8f4;border-radius:14px;padding:14px}.metric span{font-size:12px;color:#756f68}.metric strong{display:block;font-size:24px;margin-top:4px}.setting{font-size:34px;font-weight:700;color:#6f4e37}.pill{display:inline-block;background:#f0e8df;color:#6f4e37;border-radius:999px;padding:5px 9px;font-size:12px}.steps{padding-left:22px;line-height:1.9;font-size:14px}.source{border-top:1px solid #e6e0d8;margin-top:12px;padding-top:12px;font-size:12px;line-height:1.7;color:#756f68}.hidden{display:none!important}@media(max-width:380px){.grid{grid-template-columns:1fr}}
+</style></head><body><main>
+<div class="muted">COFFEE RECIPE</div><h1>コーヒーをつくる</h1>
+<div class="card"><div class="field"><label>作りたいコーヒー</label><select id="drink"><option value="tonic">エスプレッソトニック</option><option value="latte">カフェラテ</option><option value="espresso">エスプレッソ</option><option value="americano">アメリカーノ</option><option value="drip">ハンドドリップ</option><option value="coldbrew">水出しコーヒー</option><option value="coldlatte">水出しラテ</option></select></div>
+<div class="grid"><div class="field"><label>グラス・カップ容量（ml）</label><input id="volume" type="number" value="300" min="50" step="10"></div><div class="field"><label>入れる割合</label><select id="fill"><option value=".75">75%</option><option value=".85" selected>85%</option><option value=".95">95%</option></select></div></div>
+<div class="field"><label>グラインダー</label><select id="grinder"><option>TIMEMORE BRICKS 01S</option></select></div>
+<div class="field" id="espressoRatioBox"><label>エスプレッソ抽出比率</label><div class="metric"><strong id="espressoRatioValue">—</strong><span id="espressoRatioSource">—</span></div></div>
+<div class="field hidden" id="brewRatioBox"><label>豆 : お湯</label><select id="brewRatio"><option value="13">1 : 13（濃いめ）</option><option value="15" selected>1 : 15（標準）</option><option value="17">1 : 17（軽め）</option></select></div>
+<div class="field hidden" id="coldRatioBox"><label>水出し 豆 : 水</label><select id="coldRatio"><option value="10">1 : 10（濃いめ）</option><option value="12">1 : 12（やや濃い）</option><option value="15" selected>1 : 15（標準）</option><option value="17">1 : 17（軽め）</option></select></div></div></div>
+
+<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>おすすめレシピ</b><span class="pill" id="basis">計算値</span></div><div class="results" style="margin-top:12px"><div class="metric"><span>豆</span><strong id="beans">—</strong></div><div class="metric"><span id="material1Label">—</span><strong id="material1">—</strong></div><div class="metric"><span id="material2Label">—</span><strong id="material2">—</strong></div><div class="metric"><span>完成量</span><strong id="final">—</strong></div></div></div>
+
+<div class="card"><div class="muted">BRICKS 01S 挽き目</div><div class="setting" id="setting">—</div><div class="note" id="range">—</div></div>
+<div class="card"><b>つくり方</b><ol id="steps" class="steps"></ol></div><div class="card"><b>数字の根拠</b><div id="source" class="source"></div></div>
+<div class="note">メーカー公表値・一般的なレシピ・アプリ独自の推定値を分けています。特に挽き目はゼロ点、豆、焙煎、抽出機器で変わります。</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+
+const D={
+  tonic:{
+    ratio:2.8,
+    ratioLabel:"1 : 2.8",
+    ratioSource:"このアプリの推定（9gの豆 → 25g前後のエスプレッソを基準）",
+    setting:"1.0",
+    range:"BRICKS 01S：エスプレッソ 0〜3（メーカー公表）",
+    source:"エスプレッソトニックの公開レシピでは、ダブルエスプレッソ＋トニックという構成は確認できますが、豆量と抽出量からなるエスプレッソ抽出比率までは指定されていません。そのため1:2.8はアプリの推定値です。トニック量は完成量から差し引いて計算します。",
+    steps:["豆を計量","BRICKS 01Sで挽く","エスプレッソを目標抽出量まで抽出","氷とトニックを入れる","エスプレッソをゆっくり注ぐ"]
+  },
+  latte:{
+    ratio:2,
+    ratioLabel:"1 : 2",
+    ratioSource:"一般的なエスプレッソレシピ（18g → 36g）",
+    setting:"1.0",
+    range:"BRICKS 01S：エスプレッソ 0〜3（メーカー公表）",
+    source:"ラテ自体の配合はレシピによって異なりますが、公開レシピでは18gの豆から36gのエスプレッソ（1:2）を抽出する例があります。ミルク量は完成量から計算します。",
+    steps:["豆を計量","BRICKS 01Sで挽く","エスプレッソを目標抽出量まで抽出","ミルクをスチーム","合わせる"]
+  },
+  espresso:{
+    ratio:2,
+    ratioLabel:"1 : 2",
+    ratioSource:"一般的なエスプレッソレシピ（18g → 36g）",
+    setting:"1.0",
+    range:"BRICKS 01S：エスプレッソ 0〜3（メーカー公表）",
+    source:"一般的なスタートレシピとして18gの豆→36gのエスプレッソ（1:2）を採用。これは固定規格ではなくスタート値です。",
+    steps:["豆を計量","BRICKS 01Sで挽く","目標抽出量まで抽出"]
+  },
+  americano:{
+    ratio:2,
+    ratioLabel:"1 : 2",
+    ratioSource:"一般的なエスプレッソレシピ（18g → 36g）",
+    setting:"1.0",
+    range:"BRICKS 01S：エスプレッソ 0〜3（メーカー公表）",
+    source:"アメリカーノの公開レシピでは、まずエスプレッソを抽出してから湯で希釈します。エスプレッソ部分は18g→36g（1:2）の一般的なレシピを採用し、お湯は完成量から計算します。",
+    steps:["エスプレッソを抽出","お湯を用意","合わせる"]
+  },
+  drip:{
+    ratio:15,
+    ratioLabel:"1 : 15",
+    ratioSource:"一般的なレシピ（Blue Bottle Coffee）",
+    setting:"6.0",
+    range:"BRICKS 01S：ポアオーバー 5〜8（メーカー公表）",
+    source:"Blue Bottle Coffeeのレシピでは、コーヒー:水=1:12〜1:15を基本パラメータとして紹介しており、1:15を採用します。",
+    steps:["豆を挽く","BRICKS 01Sで挽く","蒸らす","数回に分けて注湯"]
+  },
+  coldbrew:{
+    ratio:15,
+    ratioLabel:"1 : 15",
+    ratioSource:"一般的なレシピ（Locale Coffee Roasters）",
+    setting:"7.0",
+    range:"水出し専用の公式目盛りなし（アプリ推定）",
+    source:"Locale Coffee Roastersは、ストレートで飲む標準的な水出しを1:15、ミルク用を1:12、濃縮を1:5としています。ここではストレート用の1:15を採用します。BRICKS 01Sの水出し専用目盛りはメーカー公表値がないため、7.0はアプリ推定です。",
+    steps:["豆を挽く","BRICKS 01Sで挽く","豆と水を合わせる","冷蔵などでゆっくり抽出","濾す"]
+  },
+  coldlatte:{
+    ratio:12,
+    ratioLabel:"1 : 12",
+    ratioSource:"一般的なレシピ（Locale Coffee Roasters）",
+    setting:"7.0",
+    range:"水出し専用の公式目盛りなし（アプリ推定）",
+    source:"Locale Coffee Roastersは、ミルクベースの水出しを1:12としています。水出しラテではこの比率を採用し、コーヒーとミルクの最終配合はアプリ推定です。BRICKS 01Sの7.0もアプリ推定です。",
+    steps:["水出しコーヒーを作る","ミルクと氷を用意","合わせる"]
+  }
+};
+
+function g(n){return Math.round(n)+" g"}
+
+function update(){
+  const t=$("drink").value;
+  const cap=Math.max(50,+$("volume").value||300);
+  const final=cap*+$("fill").value;
+  const d=D[t];
+
+  $("espressoRatioBox").classList.toggle("hidden",!["tonic","latte","espresso","americano"].includes(t));
+  $("brewRatioBox").classList.toggle("hidden",t!=="drip");
+  $("coldRatioBox").classList.toggle("hidden",t!=="coldbrew");
+
+  let b=0,m1=0,m2=0,l1="—",l2="—",formula="";
+
+  if(["tonic","latte","espresso","americano"].includes(t)){
+    let shot;
+    if(t==="espresso"){
+      shot=final;
+    }else{
+      shot=Math.min(t==="tonic"?25:36,final*.18);
+    }
+    b=shot/d.ratio;
+    m2=shot;
+    l2="エスプレッソ抽出量";
+
+    if(t==="tonic"){
+      m1=final-shot;l1="トニックウォーター";
+    }else if(t==="latte"){
+      m1=final-shot;l1="ミルク";
+    }else if(t==="americano"){
+      m1=final-shot;l1="お湯";
+    }
+
+    formula=`豆 ${g(b)} × 1:${d.ratio} → エスプレッソ ${g(shot)}`;
+    if(t!=="espresso") formula+=` ＋ ${l1} ${g(m1)}`;
+  }else if(t==="drip"){
+    const r=15;
+    b=final/r;m1=final;l1="注ぐお湯";
+    formula=`豆 ${g(b)} × 1:${r} → お湯 ${g(m1)}`;
+  }else if(t==="coldbrew"){
+    const r=+$("coldRatio").value;
+    b=final/(r-.9);
+    m1=b*r;l1="抽出用の水";
+    m2=Math.max(0,m1-b*.9);l2="抽出後の液量（推定）";
+    formula=`豆:水 = 1:${r}。豆1gあたり約0.9gの水が残ると仮定したアプリ推定。`;
+  }else{
+    const coffee=final*.4;
+    const r=12;
+    b=coffee/(r-.9);
+    m1=b*r;l1="水出し用の水";
+    m2=coffee;l2="水出しコーヒー";
+    formula=`水出しを1:${r}で作り、完成量の約40%をコーヒーとするアプリ推定。`;
+  }
+
+  $("beans").textContent=g(b);
+  $("material1").textContent=m1?g(m1):"—";
+  $("material2").textContent=m2?g(m2):"—";
+  $("material1Label").textContent=l1;
+  $("material2Label").textContent=l2;
+  $("final").textContent=g(final);
+
+  if(["tonic","latte","espresso","americano"].includes(t)){
+    $("espressoRatioValue").textContent=d.ratioLabel;
+    $("espressoRatioSource").textContent=d.ratioSource;
+  }
+
+  $("setting").textContent=d.setting;
+  $("range").textContent=d.range;
+  $("source").textContent=d.source+" 計算: "+formula;
+  $("basis").textContent=(t==="tonic"||t==="coldbrew"||t==="coldlatte")?"推定を含む":"計算値";
+
+  $("steps").innerHTML="";
+  d.steps.forEach(x=>{
+    const li=document.createElement("li");
+    li.textContent=x;
+    $("steps").appendChild(li);
+  });
+}
+
+["drink","volume","fill","brewRatio","coldRatio"].forEach(id=>$(id).addEventListener("input",update));
+update();
+</script></body></html>
