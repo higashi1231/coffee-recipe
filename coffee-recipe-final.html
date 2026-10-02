@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f2e9">
+<title>coffee recipe.</title>
+<style>
+:root{--green:#174c3b;--green2:#0f382c;--cream:#f5f2e9;--paper:#fffdf8;--ink:#222a26;--muted:#7b817b;--line:#dddcd4;--gold:#b18b57}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif}.app{max-width:760px;margin:auto;background:var(--paper);min-height:100vh;box-shadow:0 0 45px #0000000a}
+.hero{background:var(--green);color:#fff;padding:25px 22px 28px}.brand{font:24px Georgia,serif;letter-spacing:-.03em}.brand small{font:12px sans-serif;margin-left:2px;opacity:.8}.hero p{margin:7px 0 0;font-size:11px;opacity:.72;letter-spacing:.08em}.nav{display:flex;position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line)}.nav button{flex:1;padding:15px 4px;border:0;background:none;color:#8a8f89;font-size:12px}.nav button.active{color:var(--green);font-weight:700;border-bottom:2px solid var(--green)}
+main{padding:25px 18px 80px}.screen{display:none}.screen.active{display:block}.eyebrow{font-size:10px;letter-spacing:.18em;color:#9a9d97}.title{font:32px/1.2 Georgia,serif;margin:5px 0}.desc{font-size:12px;color:var(--muted);margin-bottom:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin:13px 0}.card h2{font:21px Georgia,serif;margin:0 0 14px}.label{font-size:10px;letter-spacing:.13em;color:#8d938c;margin-bottom:7px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+select,input,textarea{width:100%;padding:12px;border:1px solid #d7d8d1;border-radius:10px;background:#fbfaf5;color:var(--ink);font-size:13px}.choice{border:1px solid #d7d8d1;background:#fbfaf5;border-radius:10px;padding:12px;font-size:12px;cursor:pointer;text-align:center}.choice.active{background:var(--green);color:white;border-color:var(--green)}.helper{font-size:10px;color:#90958f;margin-top:7px}
+.result{background:#f1f4ed;border-radius:14px;padding:15px}.result .big{font:29px Georgia,serif;color:var(--green)}.result small{font-size:10px;color:#747c75}.source{font-size:10px;color:#92968f;line-height:1.6;margin-top:10px}.estimate{color:#a47742;font-weight:700}
+.steps .step{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #ecebe5}.steps .step:last-child{border:0}.num{width:27px;height:27px;border-radius:50%;background:var(--green);color:white;display:grid;place-items:center;font-size:11px;flex:none}.step b{font-size:12px}.step p{margin:3px 0 0;font-size:11px;color:#747a74;line-height:1.7}.tip{border-left:3px solid var(--gold);padding:11px 12px;background:#faf5eb;font-size:11px;line-height:1.7;color:#676b65}
+.learnbox{padding:14px 0;border-top:1px solid var(--line)}.learnbox:first-child{border-top:0}.learnbox h3{font-size:13px;margin:0;cursor:pointer}.learnbody{display:none;font-size:11px;line-height:1.8;color:#6f756f;padding-top:9px}.learnbox.open .learnbody{display:block}.log{padding:13px 0;border-bottom:1px solid var(--line)}.log b{font:18px Georgia,serif}.log small{display:block;color:#7c827c;font-size:10px}.button{width:100%;border:0;border-radius:11px;padding:14px;background:var(--green);color:white;font-weight:700;margin-top:12px}.empty{color:#9a9e98;font-size:11px;padding:12px 0}
+@media(max-width:520px){main{padding:22px 15px 70px}.title{font-size:29px}.grid3{grid-template-columns:1fr}.hero{padding-left:18px;padding-right:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="hero"><div class="brand">coffee recipe.<small>riving.</small></div><p>MAKE · LEARN · REMEMBER</p></header>
+<nav class="nav"><button class="active" onclick="tab('recipe',this)">RECIPE</button><button onclick="tab('learn',this)">LEARN</button><button onclick="tab('record',this)">LOG</button></nav>
+<main>
+
+<section id="recipe" class="screen active">
+<div class="eyebrow">YOUR COFFEE</div><h1 class="title">今日の一杯をつくる。</h1><div class="desc">最初に3つ選ぶだけ。容量と好みに合わせてレシピを組み立てます。</div>
+
+<div class="card">
+<div class="label">01 · コーヒーの種類</div>
+<select id="drink" onchange="build()">
+<option value="tonic">エスプレッソトニック</option><option value="latte">カフェラテ</option><option value="espresso">エスプレッソ</option><option value="americano">アメリカーノ</option><option value="drip">ハンドドリップ</option><option value="cold">水出しコーヒー</option><option value="coldlatte">水出しラテ</option>
+</select>
+</div>
+
+<div class="card">
+<div class="label">02 · 入れたい容量</div>
+<div class="grid3" id="caps"></div>
+<div class="helper" id="capHelp"></div>
+</div>
+
+<div class="card">
+<div class="label">03 · どんな感じで飲みたい？</div>
+<div class="grid3" id="taste">
+<button class="choice active" data-t="bold" onclick="taste('bold')">しっかり<br><small>コーヒー感</small></button>
+<button class="choice" data-t="balance" onclick="taste('balance')">バランス<br><small>甘さ・コク</small></button>
+<button class="choice" data-t="light" onclick="taste('light')">軽やか<br><small>すっきり</small></button>
+</div>
+</div>
+
+<div class="card">
+<h2 id="rtitle">Recipe</h2>
+<div class="grid">
+<div class="result"><small>挽く豆</small><div class="big" id="dose">—</div></div>
+<div class="result"><small>抽出エスプレッソ</small><div class="big" id="shot">—</div></div>
+<div class="result"><small id="mixLabel">組み合わせる量</small><div class="big" id="mix">—</div></div>
+<div class="result"><small>BRICKS 01S</small><div class="big" id="grind">—</div></div>
+</div>
+<div class="source" id="source"></div>
+</div>
+
+<div class="card"><h2>おいしく淹れる順序</h2><div class="steps" id="steps"></div></div>
+<div class="card"><h2>このレシピの理由</h2><div class="tip" id="why"></div></div>
+</section>
+
+<section id="learn" class="screen">
+<div class="eyebrow">LEARN</div><h1 class="title">数字の意味を知る。</h1><div class="desc">レシピを変える前に、何が味を変えているのかを学びます。</div>
+<div class="card" id="learnBox"></div>
+</section>
+
+<section id="record" class="screen">
+<div class="eyebrow">BREW LOG</div><h1 class="title">淹れた一杯を残す。</h1><div class="desc">おいしかった条件を、次回の自分へ。</div>
+<div class="card">
+<div class="grid"><div><div class="label">豆</div><input id="bean" placeholder="例：エチオピア"></div><div><div class="label">豆量</div><input id="rdose" placeholder="g"></div></div>
+<div class="grid" style="margin-top:10px"><div><div class="label">挽き目</div><input id="rgrind" placeholder="例：6.0"></div><div><div class="label">抽出量</div><input id="ryield" placeholder="g"></div></div>
+<div style="margin-top:10px"><div class="label">メモ</div><textarea id="memo" rows="4" placeholder="香り・味・次回変えたいこと"></textarea></div>
+<button class="button" onclick="saveLog()">この抽出を記録する</button>
+</div>
+<div class="card"><h2>記録</h2><div id="logs"></div></div>
+</section>
+
+</main>
+</div>
+<script>
+const recipes={
+tonic:{name:"エスプレッソトニック",baseCap:211,baseShot:36,baseMix:175,grind:1.0,mix:"トニック",ratio:"エスプレッソ1：トニック約4.9",source:"エスプレッソトニック：公開レシピではダブルエスプレッソ＋トニック150〜200mlが紹介されています。36g＋175gを基準に容量へ換算。",learn:["エスプレッソトニック","公開レシピには50mlのコールドブリューまたはダブルエスプレッソ＋150〜200mlのトニックという例があります。ここではダブルエスプレッソ36g＋トニック175gを基準にしています。","トニックはよく冷やし、氷をたっぷり。炭酸を落ち着かせてからエスプレッソをゆっくり重ねると層を作りやすくなります。"],steps:["グラスに氷をたっぷり入れ、冷えたトニックを注ぐ。","エスプレッソを18g挽き、36gを25〜30秒程度で抽出する。","好みに合わせた濃さのショットを、トニックへゆっくり重ねる。","まず一口そのまま味わい、必要なら軽く混ぜる。"],why:"しっかりを選ぶとエスプレッソの比率を高め、軽やかを選ぶとトニック側を増やします。容量が公開レシピの範囲を超える場合はアプリ推定です。"},
+latte:{name:"カフェラテ",baseCap:236,baseShot:36,baseMix:200,grind:1.0,mix:"ミルク",ratio:"エスプレッソ1：ミルク約5.6",source:"ラテ：18g→36gのエスプレッソ＋180〜220g程度のミルクという公開レシピを基準にしています。",learn:["カフェラテ","公開レシピでは18g→36g、ミルク180〜220g、仕上げ55〜65℃前後の例があります。","ミルクは最初に少量だけ空気を入れ、その後は渦を作ってきめ細かなマイクロフォームにします。"],steps:["カップを温める。","豆を挽き、エスプレッソを抽出する。","冷たいミルクに短く空気を入れ、渦を作って55〜65℃程度まで温める。","ピッチャーを回して泡を整え、エスプレッソへゆっくり注ぐ。"],why:"ラテはミルク量が多いので、容量が大きいほど同じショットではコーヒー感が弱くなります。容量に合わせてショットも比例させています。"},
+espresso:{name:"エスプレッソ",baseCap:36,baseShot:36,baseMix:0,grind:1.0,mix:"—",ratio:"1:2（豆：抽出）",source:"エスプレッソ：18g→36gという公開ラテレシピ等のダブルショット基準を採用。",learn:["エスプレッソ","18gの豆から36gを抽出する1:2を基準にしています。ここでの「1:2」は豆と抽出液の重量比です。","例えば10g→20gなら1:2、10g→21gなら1:2.1。抽出量は別物として記録します。"],steps:["ポルタフィルターを乾かし、豆を計量する。","細挽きにして粉を均す。","タンピングして抽出を開始する。","目標抽出量で止め、時間と味を記録する。"],why:"容量そのものがエスプレッソの完成量です。しっかりなら少し短め、軽やかなら少し長めの比率を採用する設計にしています。比率変更はアプリ推定です。"},
+americano:{name:"アメリカーノ",baseCap:144,baseShot:36,baseMix:108,grind:1.0,mix:"お湯",ratio:"エスプレッソ1：お湯3",source:"アメリカーノ：公開レシピでエスプレッソ36g＋お湯120〜180ml、または1:2〜1:4程度が紹介されています。1:3を基準に換算。",learn:["アメリカーノ","アメリカーノは抽出と希釈を分けて考えます。36gのエスプレッソに対してお湯を加えます。","公開レシピでは1:2〜1:4程度の幅があるため、ここではバランスを1:3とし、好みによって1:2〜1:4方向へ変えます。"],steps:["カップを温める。","エスプレッソを抽出する。","お湯を用意し、エスプレッソとは別に量る。","お湯を先に入れてからショットを注ぐと、クレマを残しやすい仕上がりになります。"],why:"しっかり＝1:2、バランス＝1:3、軽やか＝1:4として容量から逆算。公開範囲を超える容量はアプリ推定です。"},
+drip:{name:"ハンドドリップ",baseCap:350,baseShot:0,baseMix:350,grind:6.0,mix:"抽出するお湯",ratio:"1:15",source:"Blue Bottle公式：20〜27g・350g・中挽き・2:30〜3:30。別の公式理論記事ではブレンド30g/350g、シングルオリジン22〜24g/350g。",learn:["ハンドドリップ","Blue Bottle公式では中挽き、350gの湯、20〜27gの豆、2:30〜3:30が案内されています。","公式手順では50gで蒸らし、40秒から150g、1:10で250g、1:40で350gまで注ぎます。"],steps:["フィルターをセットして湯通しし、器具を温める。","容量から計算した豆を中挽きにする。","0:00〜0:10で全体を湿らせ、50gまで注いで蒸らす。","0:40で150g、1:10で250g、1:40で最終量まで注ぐ。","2:30〜3:30を目安に落ち切るまで待つ。"],why:"容量はBlue Bottle公式の350gを基準に1:15で比例計算。豆量が公式の20〜27g範囲から外れる場合はアプリ推定です。"},
+cold:{name:"水出しコーヒー",baseCap:1000,baseShot:0,baseMix:1000,grind:7.0,mix:"抽出水",ratio:"1:15",source:"Locale Coffee Roasters：1:15、12〜24時間、粗挽き。THE WORD COFFEE：1:13〜1:15の例。",learn:["水出しコーヒー","水出しは豆と水を長時間接触させるため、粗挽きを基本にします。","完成液は「入れた水量」と同じではありません。粉が水を保持するため、完成量は減ります。"],steps:["粗挽きにした豆を容器へ入れる。","計算した抽出水を加え、粉全体をしっかり濡らす。","冷蔵庫で12〜24時間を目安に抽出する。","フィルターで濾し、すぐに別容器へ移す。"],why:"1:15を基準に容量から抽出水を計算。完成液量は豆の保水分だけ少なくなるため、ここはアプリ推定で表示します。"},
+coldlatte:{name:"水出しラテ",baseCap:300,baseShot:0,baseMix:0,grind:7.0,mix:"水出し＋ミルク",ratio:"水出し1:12",source:"Locale Coffee Roasters：ミルク用は1:12（85g/L）を例示。",learn:["水出しラテ","Locale Coffee Roastersでは、ミルクと合わせる水出しを1:12とする例があります。","水出しコーヒー側を濃く作り、ミルクで仕上げるとコーヒー感が残りやすくなります。"],steps:["豆を粗挽きにする。","容量から計算した水出し用の水を加える。","冷蔵庫で12〜24時間を目安に抽出する。","濾した水出しコーヒーに冷たいミルクを合わせる。"],why:"水出し側を1:12で作り、残りをミルクにする設計。容量・ミルク量の最終配分はアプリ推定です。"}
+};
+let cap=300,tasteMode="balance";
+
+function tab(id,b){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active")}
+function setCap(v){cap=v;document.querySelectorAll("#caps .choice").forEach(x=>x.classList.toggle("active",+x.dataset.v===cap));build()}
+function taste(v){tasteMode=v;document.querySelectorAll("#taste .choice").forEach(x=>x.classList.toggle("active",x.dataset.t===v));build()}
+function calc(){
+ const r=recipes[drink.value];
+ let shot=0,mix=0,dose=0,grind=r.grind,src=r.source, label=r.mix;
+ if(drink.value==="drip"){dose=cap/15;mix=cap}
+ else if(drink.value==="cold"){dose=cap/15;mix=cap}
+ else if(drink.value==="coldlatte"){dose=cap/12;mix=cap}
+ else if(drink.value==="espresso"){let ratio=tasteMode==="bold"?1.8:tasteMode==="light"?2.2:2;shot=cap;dose=shot/ratio}
+ else{
+   let baseShot=r.baseShot, baseMix=r.baseMix;
+   let totalBase=baseShot+baseMix;
+   let sRatio=tasteMode==="bold"?1.15:tasteMode==="light"?.85:1;
+   shot=baseShot*sRatio*(cap/totalBase);
+   mix=cap-shot;
+   dose=shot/2;
+   if(drink.value==="americano"){
+     const ar=tasteMode==="bold"?2:tasteMode==="light"?4:3;
+     shot=cap/(1+ar); mix=cap-shot; dose=shot/2;
+   }
+ }
+ if(drink.value==="drip") label="抽出水";
+ if(drink.value==="cold") label="抽出水";
+ if(drink.value==="coldlatte") label="水出し用の水";
+ let estimate="";
+ if(drink.value==="drip" && (dose<20||dose>27)) estimate="豆量はBlue Bottle公式の20〜27g/350gの範囲外です。容量に合わせた計算値のためアプリ推定。";
+ if(drink.value==="coldlatte") estimate="水出し1:12は公開レシピ基準。最終的な水出し＋ミルクの配分はアプリ推定。";
+ if(drink.value==="cold") estimate="抽出水の量です。完成液量ではありません。完成量は保水分を考慮する必要があります。";
+ if(drink.value==="tonic" && (mix<150||mix>200)) estimate="トニック150〜200gという公開レシピ範囲を超えるため、この容量への換算はアプリ推定。";
+ if(drink.value==="latte" && (mix<180||mix>220)) estimate="ミルク180〜220gという公開レシピ範囲を超えるため、この容量への換算はアプリ推定。";
+ if(drink.value==="americano" && (mix<72||mix>144)) estimate="お湯量が一般的な1:2〜1:4の範囲から外れる場合はアプリ推定。";
+ return {dose,shot,mix,grind,label,src,estimate};
+}
+function build(){
+ const r=recipes[drink.value],x=calc();
+ document.getElementById("rtitle").textContent=r.name;
+ document.getElementById("dose").textContent=x.dose?x.dose.toFixed(1)+" g":"—";
+ document.getElementById("shot").textContent=x.shot?x.shot.toFixed(1)+" g":"—";
+ document.getElementById("mixLabel").textContent=x.label;
+ document.getElementById("mix").textContent=x.mix?x.mix.toFixed(0)+" g":"—";
+ document.getElementById("grind").textContent=x.grind;
+ document.getElementById("source").innerHTML=x.src+(x.estimate?'<br><span class="estimate">'+x.estimate+"</span>":"");
+ let s=r.steps;
+ if(drink.value==="espresso"){if(tasteMode==="bold")s=["豆を計量し、細挽きにする。","抽出量は豆量×1.8を目標に、短めで濃いショットにする。","抽出時間を記録する。","そのまま味わい、次回の比較材料にする。"];if(tasteMode==="light")s=["豆を計量し、細挽きにする。","抽出量は豆量×2.2を目標に、少し長めのショットにする。","抽出時間を記録する。","香りと後味を確認する。"]}
+ if(drink.value==="drip" && tasteMode==="bold")s=["公式レシピの基本手順を使い、容量に合わせて豆量だけ比例させる。","蒸らしは50gを基準にする。","150g→250g→最終量と3回に分けて注ぐ。","抽出後、しっかりしたコクと甘さを確認する。"];
+ if(drink.value==="drip" && tasteMode==="light")s=["中挽きで豆を準備する。","蒸らし後、ゆっくり均一に注ぐ。","最終量まで複数回に分けて注ぐ。","軽さと香りを確認し、次回へ記録する。"];
+ document.getElementById("steps").innerHTML=s.map((t,i)=>{let a=Array.isArray(t)?t:[String(i+1),t,""];return `<div class="step"><div class="num">${a[0]}</div><div><b>${a[1]}</b><p>${a[2]}</p></div></div>`}).join("");
+ document.getElementById("why").textContent=r.why;
+ document.getElementById("learnBox").innerHTML=r.learn.map((t,i)=>`<div class="learnbox ${i===0?'open':''}"><h3 onclick="this.parentElement.classList.toggle('open')">${i===0?'このドリンクの基準':i===1?'なぜ、この設定？':'おいしくするポイント'} ＋</h3><div class="learnbody">${t}</div></div>`).join("");
+ document.getElementById("capHelp").textContent=drink.value==="cold"?"容量＝抽出水。完成液量ではありません。":drink.value==="drip"?"容量＝抽出するお湯の量。":drink.value==="espresso"?"容量＝抽出エスプレッソ量。":"容量＝飲む液体の合計量（氷を除く目安）。";
+}
+function saveLog(){
+ const logs=JSON.parse(localStorage.getItem("coffeeRecipeLogs")||"[]");
+ const x=calc();logs.unshift({date:new Date().toLocaleString("ja-JP"),drink:recipes[drink.value].name,cap,dose:x.dose.toFixed(1),shot:x.shot?x.shot.toFixed(1):"",mix:x.mix?x.mix.toFixed(0):"",grind:x.grind,bean:bean.value,memo:memo.value});
+ localStorage.setItem("coffeeRecipeLogs",JSON.stringify(logs));bean.value="";rdose.value="";rgrind.value="";ryield.value="";memo.value="";renderLogs();alert("記録しました。");
+}
+function renderLogs(){const logs=JSON.parse(localStorage.getItem("coffeeRecipeLogs")||"[]");logsEl=document.getElementById("logs");logsEl.innerHTML=logs.length?logs.map(x=>`<div class="log"><b>${x.drink}</b><small>${x.date}｜容量 ${x.cap}g｜豆 ${x.dose}g｜抽出 ${x.shot||"—"}g｜組み合わせ ${x.mix||"—"}g｜BRICKS ${x.grind}</small><small>${x.bean||""} ${x.memo||""}</small></div>`).join(""):'<div class="empty">まだ記録はありません。</div>'}
+const capEl=document.getElementById("caps");[180,220,250,300,350,400].forEach(v=>{const b=document.createElement("button");b.className="choice";b.dataset.v=v;b.textContent=v+" g";b.onclick=()=>setCap(v);capEl.appendChild(b)});setCap(300);renderLogs();
+</script>
+</body>
+</html>
